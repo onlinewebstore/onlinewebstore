@@ -11,10 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-class UserController{
+class UserController extends Controller{
 	
-    public function getAllusers(){
-        $user=Auth::guard('admin')->user();
-        $user->getallusers();
-    }
+    
 }

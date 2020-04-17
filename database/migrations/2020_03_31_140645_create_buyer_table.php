@@ -19,7 +19,7 @@ class CreateBuyerTable extends Migration
             $table->string('email')->unique();
             $table->string('username')->unique();
             $table->string('password');
-            $table->string('type')->default('buyers');
+            $table->string('type')->default('buyer');
             $table->timestamps();
 
         });

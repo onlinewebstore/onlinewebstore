@@ -14,8 +14,9 @@ class LoginController extends Controller
 
     public function __construct()
     {
+        $this->middleware('checklogin')->except('logout');
     }
-    public function datavalidate($data)
+    public function validator($data)
     {
         $rules = [
             'email' => ['required', 'string', 'email', 'max:255'],
@@ -41,102 +42,22 @@ class LoginController extends Controller
     {
         $typeofusers = array('admin', 'owner', 'buyer');
 
-        $data = json_decode($request->getContent(), true);
-
-        $validator = $this->datavalidate($data);
-        if ($validator=="") {
-            http_response_code(400);
-            echo json_encode(array("message" => "Validation failed"));
+        //  $data = json_decode($request->getContent(), true);
+        $data = $request->all();
+        $validator = $this->validator($data);
+        if ($validator == "") {
+            abort(400, 'validation failed');
         } else {
             foreach ($typeofusers as $type) {
-                if ($validator=="email"&&Auth::guard($type)->attempt(['email' => $data['email'], 'password' => $data['password']])) {
-                    http_response_code(200);
-                    echo json_encode(array("message" => "Login Succesful"));
-                    return;
-                } else if ($validator=="username"&&Auth::guard($type)->attempt(['username' => $data['username'], 'password' => $data['password']])) {
-                    http_response_code(200);
-                    echo json_encode(array("message" => "Login Succesful"));
-                    return;
+                if ($validator == "email" && Auth::guard($type)->attempt(['email' => $data['email'], 'password' => $data['password']])) {
+                    return response('Login Successful', 200);
+                } else if ($validator == "username" && Auth::guard($type)->attempt(['username' => $data['username'], 'password' => $data['password']])) {
+                    return response('Login Successful', 200);
                 }
             }
-            http_response_code(400);
-            echo json_encode(array("message" => "Login failed"));
+            abort(400, 'User not found.');
         }
     }
-    /*public function buyerLogin(Request $request)
-    {
-
-        $data = json_decode($request->getContent(), true);
-        $rules = [
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:8'],
-
-        ];
-        $validator = Validator::make($data, $rules);
-        if ($validator->fails()) {
-            //echo 'testing';
-            http_response_code(400);
-            echo json_encode(array("message" => "Validation failed"));
-        } else {
-            if (Auth::guard('buyer')->attempt(['email' => $data['email'], 'password' => $data['password']])) {
-                http_response_code(200);
-                echo json_encode(array("message" => "Login Succesful"));
-            } else {
-                http_response_code(400);
-                echo json_encode(array("message" => "Login failed"));
-            }
-        }
-    }
-    public function adminLogin(Request $request)
-    {
-
-        $data = json_decode($request->getContent(), true);
-        $rules = [
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:8'],
-
-        ];
-        $validator = Validator::make($data, $rules);
-        if ($validator->fails()) {
-            //echo 'testing';
-            http_response_code(400);
-            echo json_encode(array("message" => "Validation failed"));
-        } else {
-
-            if (Auth::guard('admin')->attempt(['email' => $data['email'], 'password' => $data['password']])) {
-                http_response_code(200);
-                echo json_encode(array("message" => "Login Succesful"));
-            } else {
-                http_response_code(400);
-                echo json_encode(array("message" => "Login failed"));
-            }
-        }
-    }
-    public function ownerLogin(Request $request)
-    {
-
-        $data = json_decode($request->getContent(), true);
-        $rules = [
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:8'],
-
-        ];
-        $validator = Validator::make($data, $rules);
-        if ($validator->fails()) {
-            //echo 'testing';
-            http_response_code(400);
-            echo json_encode(array("message" => "Validation failed"));
-        } else {
-
-            if (Auth::guard('owner')->attempt(['email' => $data['email'], 'password' => $data['password']])) {
-                http_response_code(200);
-                echo json_encode(array("message" => "Login Succesful"));
-            } else {
-                http_response_code(400);
-                echo json_encode(array("message" => "Login failed"));
-            }
-        }
-    }*/
     function logout()
     {
         Auth::guard('buyer')->logout();
@@ -145,7 +66,7 @@ class LoginController extends Controller
     }
     function test()
     {
-        $user = Auth::guard('admin')->user();
+        $user = Auth::guard('buyer')->user();
         print_r($user->type);
     }
 }
